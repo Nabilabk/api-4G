@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.web.WebView?>
+
+<BorderPane fx:controller="com.antennes.controller.MapController"
+    xmlns:fx="http://javafx.com/fxml">
+    <top>
+        <ToolBar>
+            <Button text="CHARGER LES ANTENNES" onAction="#loadData" />
+            <ComboBox fx:id="techFilter" promptText="Filtrer par technologie" />
+        </ToolBar>
+    </top>
+    <center>
+        <WebView fx:id="webView" prefWidth="1200" prefHeight="750" />
+    </center>
+</BorderPane>

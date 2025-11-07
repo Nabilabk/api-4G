@@ -6,6 +6,13 @@
     "configurations": [
         {
             "type": "java",
+            "name": "TestCsv",
+            "request": "launch",
+            "mainClass": "com.antennes.TestCsv",
+            "projectName": "java-project"
+        },
+        {
+            "type": "java",
             "name": "test",
             "request": "launch",
             "mainClass": "test",
