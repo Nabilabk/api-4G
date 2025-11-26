@@ -2,16 +2,34 @@
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 <?import javafx.scene.web.WebView?>
+<?import javafx.geometry.Insets?>
 
 <BorderPane fx:controller="com.antennes.controller.MapController"
-    xmlns:fx="http://javafx.com/fxml">
+    xmlns:fx="http://javafx.com/fxml"
+    minWidth="800" minHeight="600">
     <top>
-        <ToolBar>
-            <Button text="CHARGER LES ANTENNES" onAction="#loadData" />
-            <ComboBox fx:id="techFilter" promptText="Filtrer par technologie" />
+        <ToolBar style="-fx-background-color: #2c3e50; -fx-padding: 8;">
+            <Label text="📡 Antennes 4G - Maroc"
+                   style="-fx-font-size: 16px; -fx-font-weight: bold; -fx-text-fill: white;"/>
+            <Separator orientation="VERTICAL"/>
+            <Button text="🔄 RECHARGER" onAction="#loadData"
+                    style="-fx-background-color: #3498db; -fx-text-fill: white; -fx-font-weight: bold; -fx-cursor: hand;"/>
+            <Separator orientation="VERTICAL"/>
+            <Label fx:id="antennaCountLabel" text="0 antennes"
+                   style="-fx-padding: 0 10 0 10; -fx-font-size: 13px; -fx-text-fill: #ecf0f1; -fx-font-weight: bold;"/>
         </ToolBar>
     </top>
     <center>
-        <WebView fx:id="webView" prefWidth="1200" prefHeight="750" />
+        <StackPane>
+            <WebView fx:id="webView"
+                     prefWidth="1400"
+                     prefHeight="850"
+                     minWidth="600"
+                     minHeight="400"
+                     maxWidth="Infinity"
+                     maxHeight="Infinity"
+                     VBox.vgrow="ALWAYS"
+                     HBox.hgrow="ALWAYS"/>
+        </StackPane>
     </center>
 </BorderPane>

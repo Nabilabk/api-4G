@@ -3,20 +3,19 @@ package com.antennes.controller;
 import com.antennes.model.Antenne;
 import com.antennes.service.CsvService;
 import javafx.application.Platform;
-import javafx.collections.FXCollections;
 import javafx.concurrent.Worker;
 import javafx.fxml.FXML;
-import javafx.scene.control.ComboBox;
+import javafx.scene.control.Label;
 import javafx.scene.web.WebEngine;
 import javafx.scene.web.WebView;
 
 import java.util.List;
-import java.util.stream.Collectors;
+import java.util.Locale;
 
 public class MapController {
 
     @FXML private WebView webView;
-    @FXML private ComboBox<String> techFilter;
+    @FXML private Label antennaCountLabel;
 
     private WebEngine engine;
     private List<Antenne> allData;
@@ -24,30 +23,95 @@ public class MapController {
 
     @FXML
     public void initialize() {
+        // Enable context menu and interactions on WebView
+        webView.setContextMenuEnabled(true);
+
         engine = webView.getEngine();
-        loadMap();
+
+        // Enable JavaScript (should be enabled by default, but let's be explicit)
+        engine.setJavaScriptEnabled(true);
+
+        // Enable console logging from JavaScript
+        engine.setOnAlert(event -> System.out.println("JS Alert: " + event.getData()));
+
+        // Log JavaScript errors
+        engine.setOnError(event -> {
+            System.err.println("WebView Error: " + event.getMessage());
+        });
+
+        // Set user agent to avoid potential blocking
+        engine.setUserAgent("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36");
 
         allData = CsvService.loadFromResources();
         System.out.println("ANTENNES CHARGÉES: " + allData.size());
 
-        techFilter.setItems(FXCollections.observableArrayList("All", "2G", "3G", "4G", "5G"));
-        techFilter.setValue("All");
+        // Update antenna count label
+        if (antennaCountLabel != null) {
+            antennaCountLabel.setText(allData.size() + " antennes 4G");
+        }
 
+        // Single listener for load worker state
         engine.getLoadWorker().stateProperty().addListener((obs, oldState, newState) -> {
+            System.out.println("WebView state changed: " + oldState + " -> " + newState);
+
             if (newState == Worker.State.SUCCEEDED) {
                 System.out.println("Carte chargée avec succès !");
+
+                // Inject console.log interceptor to capture JavaScript logs
+                try {
+                    engine.executeScript(
+                        "var originalLog = console.log;" +
+                        "var originalError = console.error;" +
+                        "console.log = function(message) { " +
+                        "    originalLog(message); " +
+                        "};" +
+                        "console.error = function(message) { " +
+                        "    originalError(message); " +
+                        "};"
+                    );
+                    System.out.println("Console interceptor injected");
+                } catch (Exception e) {
+                    System.err.println("Error injecting console: " + e.getMessage());
+                }
+
                 mapLoaded = true;
-                loadData();
+
+                // Wait a bit for the map to fully initialize before loading data
+                Platform.runLater(() -> {
+                    try {
+                        Thread.sleep(500);
+                    } catch (InterruptedException e) {
+                        Thread.currentThread().interrupt();
+                    }
+                    invalidateMapSize();
+                    loadData();
+                });
+            } else if (newState == Worker.State.FAILED) {
+                System.err.println("Failed to load map!");
+                Throwable exception = engine.getLoadWorker().getException();
+                if (exception != null) {
+                    exception.printStackTrace();
+                }
             }
         });
 
         webView.widthProperty().addListener((obs, old, newVal) -> invalidateMapSize());
         webView.heightProperty().addListener((obs, old, newVal) -> invalidateMapSize());
+
+        // Load map last
+        loadMap();
     }
 
     private void invalidateMapSize() {
         if (mapLoaded) {
-            Platform.runLater(() -> engine.executeScript("if (map) map.invalidateSize();"));
+            Platform.runLater(() -> {
+                try {
+                    // For Canvas-based map, we need to trigger resize
+                    engine.executeScript("if (typeof resizeCanvas === 'function') { resizeCanvas(); console.log('Map resized'); }");
+                } catch (Exception e) {
+                    System.err.println("Error invalidating map size: " + e.getMessage());
+                }
+            });
         }
     }
 
@@ -56,90 +120,64 @@ public class MapController {
         if (!mapLoaded) return;
 
         Platform.runLater(() -> {
-            List<Antenne> data = allData;
-            String filter = techFilter.getValue();
-            if (filter != null && !filter.equals("All")) {
-                data = data.stream()
-                        .filter(a -> filter.equals(a.getTechnology()))
-                        .collect(Collectors.toList());
-            }
+            // All data is 4G, no filtering needed
+            System.out.println("Préparation de " + allData.size() + " antennes 4G pour chargement dynamique");
 
-            String geojson = toGeoJson(data);
+            String geojson = toGeoJson(allData);
             try {
-                engine.executeScript("addCoverage(" + geojson + ")");
-                System.out.println("GeoJSON envoyé ! (" + data.size() + " antennes)");
+                // Send data to JavaScript for dynamic loading based on viewport
+                engine.executeScript("setAllAntennas(" + geojson + ")");
+                System.out.println("Données envoyées ! (" + allData.size() + " antennes 4G disponibles)");
             } catch (Exception e) {
                 System.err.println("Erreur GeoJSON: " + e.getMessage());
+                e.printStackTrace();
             }
         });
     }
 
     private void loadMap() {
-        String html = """
-            <!DOCTYPE html>
-            <html>
-            <head>
-                <meta charset="utf-8">
-                <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
-                <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-                <style>
-                    html, body, #map { height: 100%; width: 100%; margin: 0; padding: 0; }
-                </style>
-            </head>
-            <body>
-                <div id="map"></div>
-                <script>
-                    let map, layer;
-                    document.addEventListener('DOMContentLoaded', () => {
-                        map = L.map('map').setView([31.7917, -7.0926], 6);
-                        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-                            attribution: '&copy; OpenStreetMap'
-                        }).addTo(map);
+        try {
+            // Load HTML from resources - this works better with external resources in JavaFX WebView
+            java.net.URL resourceUrl = getClass().getResource("/html/map.html");
+            if (resourceUrl == null) {
+                System.err.println("ERROR: Cannot find /html/map.html in resources!");
+                System.err.println("Trying to list resources...");
+                java.net.URL htmlDir = getClass().getResource("/html/");
+                if (htmlDir != null) {
+                    System.out.println("Found /html/ directory: " + htmlDir);
+                } else {
+                    System.err.println("/html/ directory not found!");
+                }
+                return;
+            }
 
-                        window.addCoverage = function(geojson) {
-                            if (layer) map.removeLayer(layer);
-                            if (!geojson.features || geojson.features.length === 0) return;
-
-                            layer = L.geoJSON(geojson, {
-                                pointToLayer: (f, latlng) => {
-                                    const s = f.properties.signal;
-                                    const c = s > -80 ? '#00ff00' : s > -100 ? '#ffff00' : '#ff0000';
-                                    return L.circleMarker(latlng, {
-                                        radius: 6,
-                                        fillColor: c,
-                                        color: '#000',
-                                        weight: 1,
-                                        fillOpacity: 0.8
-                                    }).bindPopup(
-                                        `<b>${f.properties.tech}</b><br>` +
-                                        `Signal: ${s} dBm<br>` +
-                                        `Rayon: ${f.properties.radius} km<br>` +
-                                        `<b>Couverture: ${f.properties.couverture}</b>`
-                                    );
-                                }
-                            }).addTo(map);
-                            map.fitBounds(layer.getBounds(), { padding: [30, 30] });
-                        };
-                    });
-                </script>
-            </body>
-            </html>
-            """;
-        engine.loadContent(html);
+            String mapUrl = resourceUrl.toExternalForm();
+            System.out.println("Loading map from: " + mapUrl);
+            engine.load(mapUrl);
+            System.out.println("Map load initiated");
+        } catch (Exception e) {
+            System.err.println("Error loading map HTML: " + e.getMessage());
+            e.printStackTrace();
+        }
     }
 
     private String toGeoJson(List<Antenne> antennes) {
         if (antennes.isEmpty()) return "{\"type\":\"FeatureCollection\",\"features\":[]}";
 
-        StringBuilder sb = new StringBuilder("{\"type\":\"FeatureCollection\",\"features\":[");
+        // Pre-allocate StringBuilder with estimated size for better performance
+        int estimatedSize = antennes.size() * 150; // Approximate size per feature
+        StringBuilder sb = new StringBuilder(estimatedSize);
+        sb.append("{\"type\":\"FeatureCollection\",\"features\":[");
+
         for (int i = 0; i < antennes.size(); i++) {
             Antenne a = antennes.get(i);
             double radiusKm = a.getRange() / 1000.0;
             int signal = (int) a.getAverageSignal();
             if (signal == 0) signal = generateSignal(a.getTechnology());
 
-            sb.append(String.format(
-                "{\"type\":\"Feature\",\"geometry\":{\"type\":\"Point\",\"coordinates\":[%f,%f]},\"properties\":{\"signal\":%d,\"tech\":\"%s\",\"radius\":%.1f,\"couverture\":\"%s\"}}",
+            // Optimized: Use Locale.US to ensure decimal points (not commas) in JSON
+            sb.append(String.format(Locale.US,
+                "{\"type\":\"Feature\",\"geometry\":{\"type\":\"Point\",\"coordinates\":[%.6f,%.6f]},\"properties\":{\"signal\":%d,\"tech\":\"%s\",\"radius\":%.1f,\"couverture\":\"%s\"}}",
                 a.getLon(), a.getLat(), signal, a.getTechnology(), radiusKm, a.getCouverture()
             ));
             if (i < antennes.size() - 1) sb.append(",");

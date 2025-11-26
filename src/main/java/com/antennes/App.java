@@ -16,6 +16,10 @@ public class App extends Application {
     }
 
     public static void main(String[] args) {
+        // Enable WebView debugging and external resources
+        System.setProperty("prism.order", "sw");
+        System.setProperty("prism.verbose", "true");
+
         launch(args);
     }
 }

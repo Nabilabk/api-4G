@@ -9,8 +9,8 @@
     <version>1.0.0</version>
 
     <properties>
-        <javafx.version>25</javafx.version>
-        <maven.compiler.release>25</maven.compiler.release>
+        <javafx.version>17.0.2</javafx.version>
+        <maven.compiler.release>17</maven.compiler.release>
     </properties>
 
     <dependencies>
@@ -57,6 +57,10 @@
                             <options>
                                 <option>--add-modules=javafx.controls,javafx.fxml,javafx.web,javafx.graphics</option>
                                 <option>--enable-native-access=javafx.graphics,javafx.web</option>
+                                <option>-Xmx2G</option>
+                                <option>-Xms512M</option>
+                                <option>-XX:+UseG1GC</option>
+                                <option>-XX:MaxGCPauseMillis=200</option>
                             </options>
                         </configuration>
                     </execution>
@@ -67,7 +71,7 @@
                 <artifactId>maven-compiler-plugin</artifactId>
                 <version>3.13.0</version>
                 <configuration>
-                    <release>25</release>
+                    <release>17</release>
                 </configuration>
             </plugin>
         </plugins>
