@@ -34,7 +34,7 @@
     <HBox style="-fx-background-color: #2c3e50; -fx-padding: 10 15 10 15; -fx-border-color: #34495e; -fx-border-width: 0 0 1 0; -fx-spacing: 20;" 
           alignment="TOP_LEFT">
         
-        <!-- Heatmap Button - Même style que les autres -->
+        <!-- Heatmap Button -->
         <VBox spacing="3" alignment="TOP_LEFT" style="-fx-padding: 2 0 0 0;">
             <Label text="VISUALIZATION" 
                    style="-fx-font-size: 8px; -fx-text-fill: #aab7b8; -fx-font-weight: bold; -fx-letter-spacing: 0.5px;"/>
@@ -45,7 +45,7 @@
                            -fx-effect: dropshadow(gaussian, rgba(231,76,60,0.3), 4, 0, 0, 1);"/>
         </VBox>
         
-        <!-- Operator Filter - Même style -->
+        <!-- Operator Filter -->
         <VBox spacing="3" alignment="TOP_LEFT" style="-fx-padding: 2 0 0 0;">
             <Label text="NETWORK FILTER" 
                    style="-fx-font-size: 8px; -fx-text-fill: #aab7b8; -fx-font-weight: bold; -fx-letter-spacing: 0.5px;"/>
@@ -62,7 +62,35 @@
                              -fx-padding: 5 8 5 8;"/>
         </VBox>
 
-        <!-- Status Display - Même style -->
+        <!-- Risk Level Filter -->
+        <VBox spacing="3" alignment="TOP_LEFT" style="-fx-padding: 2 0 0 0;">
+            <Label text="RISK FILTER" 
+                   style="-fx-font-size: 8px; -fx-text-fill: #aab7b8; -fx-font-weight: bold; -fx-letter-spacing: 0.5px;"/>
+            <ComboBox fx:id="riskComboBox" promptText="All Risk Levels" 
+                      onAction="#filterByRiskLevel" 
+                      style="-fx-pref-width: 140; 
+                             -fx-background-color: #34495e;
+                             -fx-background-radius: 4;
+                             -fx-border-color: #e74c3c;
+                             -fx-border-radius: 4;
+                             -fx-border-width: 1;
+                             -fx-font-size: 11px;
+                             -fx-text-fill: white;
+                             -fx-padding: 5 8 5 8;"/>
+        </VBox>
+
+        <!-- Export Button -->
+        <VBox spacing="3" alignment="TOP_LEFT" style="-fx-padding: 2 0 0 0;">
+            <Label text="DATA EXPORT" 
+                   style="-fx-font-size: 8px; -fx-text-fill: #aab7b8; -fx-font-weight: bold; -fx-letter-spacing: 0.5px;"/>
+            <Button text="📊 EXPORT" onAction="#exportData" 
+                    style="-fx-background-color: linear-gradient(135deg, #9b59b6, #8e44ad); 
+                           -fx-text-fill: white; -fx-font-weight: bold; -fx-font-size: 11px;
+                           -fx-padding: 6 12 6 12; -fx-background-radius: 4;
+                           -fx-effect: dropshadow(gaussian, rgba(155,89,182,0.3), 4, 0, 0, 1);"/>
+        </VBox>
+
+        <!-- Status Display -->
         <VBox spacing="3" alignment="TOP_LEFT" style="-fx-padding: 2 0 0 0;">
             <Label text="SYSTEM STATUS" 
                    style="-fx-font-size: 8px; -fx-text-fill: #aab7b8; -fx-font-weight: bold; -fx-letter-spacing: 0.5px;"/>
@@ -76,7 +104,7 @@
 
         <Region HBox.hgrow="ALWAYS"/>
 
-        <!-- Quick Status - Même style -->
+        <!-- Quick Status -->
         <VBox spacing="3" alignment="TOP_RIGHT" style="-fx-padding: 2 0 0 0;">
             <Label text="SYSTEM" 
                    style="-fx-font-size: 8px; -fx-text-fill: #aab7b8; -fx-font-weight: bold; -fx-letter-spacing: 0.5px; -fx-alignment: center-right;"/>

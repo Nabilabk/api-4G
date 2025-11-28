@@ -10,6 +10,17 @@
         * { margin: 0; padding: 0; box-sizing: border-box; }
         html, body, #map { height: 100%; width: 100%; overflow: hidden; }
         #map { background: #aad3df; }
+        
+        /* Pulsing animation for critical risk */
+        @keyframes pulse {
+            0% { opacity: 0.6; }
+            50% { opacity: 0.2; }
+            100% { opacity: 0.6; }
+        }
+        
+        .pulse-circle {
+            animation: pulse 2s infinite;
+        }
     </style>
 </head>
 <body>
@@ -21,6 +32,7 @@
 
     <script>
         var map, heatmapLayer = null, markerClusterGroup = null;
+        var pulseCircles = []; // Store pulse circles for cleanup
 
         function initMap() {
             map = L.map('map').setView([31.7917, -7.0926], 6);
@@ -31,20 +43,49 @@
             markerClusterGroup = L.markerClusterGroup({
                 maxClusterRadius: 40,
                 spiderfyOnMaxZoom: true,
-                disableClusteringAtZoom: 16
+                disableClusteringAtZoom: 16,
+                iconCreateFunction: function(cluster) {
+                    var childCount = cluster.getChildCount();
+                    var riskLevels = cluster.getAllChildMarkers().map(m => m.options.risk || 0);
+                    var maxRisk = Math.max(...riskLevels);
+                    
+                    // Determine cluster color based on highest risk
+                    var color = maxRisk < 0.3 ? '#27ae60' :
+                               maxRisk < 0.6 ? '#f39c12' :
+                               maxRisk < 0.8 ? '#e67e22' : '#e74c3c';
+                               
+                    return L.divIcon({
+                        html: '<div style="background-color:' + color + '; color:white; border:3px solid white; border-radius:50%; width:40px; height:40px; display:flex; align-items:center; justify-content:center; font-weight:bold; font-size:14px;">' + childCount + '</div>',
+                        className: 'marker-cluster-custom',
+                        iconSize: L.point(40, 40)
+                    });
+                }
             });
             map.addLayer(markerClusterGroup);
-            console.log("Carte initialisée");
+            console.log("Carte initialisée avec visualisation risque améliorée");
         }
 
         window.setAllAntennas = function(geojson) {
-            console.log("Réception de " + geojson.features.length + " antennes");
+            console.log("Réception de " + geojson.features.length + " antennes avec risque amélioré");
             if (heatmapLayer) { map.removeLayer(heatmapLayer); heatmapLayer = null; }
+            
+            // Clear existing pulse circles
+            clearPulseCircles();
+            
             map.addLayer(markerClusterGroup);
-            displayAntennas(geojson);
+            displayEnhancedAntennas(geojson);
         };
 
-        function displayAntennas(geojson) {
+        function clearPulseCircles() {
+            pulseCircles.forEach(circle => {
+                if (map.hasLayer(circle)) {
+                    map.removeLayer(circle);
+                }
+            });
+            pulseCircles = [];
+        }
+
+        function displayEnhancedAntennas(geojson) {
             markerClusterGroup.clearLayers();
             var markers = [];
             var maxAntennas = 10000;
@@ -57,40 +98,92 @@
 
                 var risk = p.risk || 0;
                 var color = p.riskColor || '#3498db';
+                var size = p.riskSize || 8;
+                var pattern = p.riskPattern || 'solid';
+                var riskLevel = p.riskLevel || 'Inconnu';
 
+                // Create main marker with enhanced styling
                 var marker = L.circleMarker([c[1], c[0]], {
-                    radius: 5 + risk * 15,
+                    radius: size,
                     fillColor: color,
                     color: '#000',
-                    weight: 1.5,
+                    weight: risk > 0.5 ? 3 : 1.5,
                     opacity: 1,
-                    fillOpacity: 0.9
+                    fillOpacity: 0.9,
+                    risk: risk // Store risk for cluster coloring
                 }).bindPopup(
-                    `<b>${p.operator || 'Inconnu'} • ${p.tech || '4G'}</b><br>
-                     Signal: ${parseFloat(p.signal || -100).toFixed(1)} dBm<br>
-                     Portée: ${parseFloat(p.radius || 1).toFixed(1)} km<br>
-                     <b style="color:${color}">Risque de panne: ${(risk*100).toFixed(1)}%</b>`
+                    `<div style="min-width: 220px; font-family: Arial, sans-serif;">
+                        <div style="background: ${color}; color: white; padding: 8px; margin: -8px -8px 8px -8px; border-radius: 4px 4px 0 0;">
+                            <b style="font-size: 14px;">${p.operator || 'Inconnu'} • ${p.tech || '4G'}</b>
+                        </div>
+                        <div style="padding: 5px 0;">
+                            <div style="display: flex; justify-content: space-between; margin: 3px 0;">
+                                <span>📶 Signal:</span>
+                                <b>${parseFloat(p.signal || -100).toFixed(1)} dBm</b>
+                            </div>
+                            <div style="display: flex; justify-content: space-between; margin: 3px 0;">
+                                <span>📡 Portée:</span>
+                                <b>${parseFloat(p.radius || 1).toFixed(1)} km</b>
+                            </div>
+                            <hr style="margin: 8px 0;">
+                            <div style="display: flex; justify-content: space-between; margin: 3px 0;">
+                                <span>⚠️  Risque:</span>
+                                <b style="color:${color}">${(risk*100).toFixed(1)}%</b>
+                            </div>
+                            <div style="display: flex; justify-content: space-between; margin: 3px 0;">
+                                <span>🏷️  Niveau:</span>
+                                <b>${riskLevel}</b>
+                            </div>
+                        </div>
+                    </div>`
                 );
 
-                // Gros cercle si risque élevé
-                if (risk > 0.6) {
-                    L.circle([c[1], c[0]], {
-                        radius: (p.radius || 1) * 1000,
+                // Add pulsating effect for critical risk antennas
+                if (pattern === 'pulse') {
+                    var pulseCircle = L.circle([c[1], c[0]], {
+                        radius: (p.radius || 1) * 800,
                         color: color,
                         weight: 3,
-                        opacity: 0.7,
-                        fillOpacity: 0.1
+                        opacity: 0.6,
+                        fillOpacity: 0.05,
+                        className: 'pulse-circle'
                     }).addTo(map);
+                    
+                    pulseCircles.push(pulseCircle);
+                }
+
+                // Add range circle for high and critical risk
+                if (risk > 0.5) {
+                    var rangeCircle = L.circle([c[1], c[0]], {
+                        radius: (p.radius || 1) * 1000,
+                        color: color,
+                        weight: risk > 0.7 ? 4 : 2,
+                        opacity: 0.7,
+                        fillOpacity: 0.03
+                    }).addTo(map);
+                    pulseCircles.push(rangeCircle);
+                }
+
+                // Add glow effect for high risk
+                if (pattern === 'glow') {
+                    var glowCircle = L.circle([c[1], c[0]], {
+                        radius: size * 3,
+                        color: color,
+                        weight: 0,
+                        fillOpacity: 0.2
+                    }).addTo(map);
+                    pulseCircles.push(glowCircle);
                 }
 
                 markers.push(marker);
             }
             markerClusterGroup.addLayers(markers);
-            console.log(markers.length + " antennes affichées avec IA");
+            console.log(markers.length + " antennes affichées avec visualisation risque améliorée");
         }
 
         window.addHeatmap = function(data) {
             console.log("Heatmap reçue: " + data.length + " points");
+            clearPulseCircles();
             map.removeLayer(markerClusterGroup);
             if (heatmapLayer) map.removeLayer(heatmapLayer);
             heatmapLayer = L.heatLayer(data, {
