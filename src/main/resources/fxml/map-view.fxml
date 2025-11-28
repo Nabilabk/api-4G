@@ -1,35 +1,109 @@
 <?xml version="1.0" encoding="UTF-8"?>
+
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 <?import javafx.scene.web.WebView?>
 <?import javafx.geometry.Insets?>
 
-<BorderPane fx:controller="com.antennes.controller.MapController"
-    xmlns:fx="http://javafx.com/fxml"
-    minWidth="800" minHeight="600">
-    <top>
-        <ToolBar style="-fx-background-color: #2c3e50; -fx-padding: 8;">
-            <Label text="📡 Antennes 4G - Maroc"
-                   style="-fx-font-size: 16px; -fx-font-weight: bold; -fx-text-fill: white;"/>
-            <Separator orientation="VERTICAL"/>
-            <Button text="🔄 RECHARGER" onAction="#loadData"
-                    style="-fx-background-color: #3498db; -fx-text-fill: white; -fx-font-weight: bold; -fx-cursor: hand;"/>
-            <Separator orientation="VERTICAL"/>
-            <Label fx:id="antennaCountLabel" text="0 antennes"
-                   style="-fx-padding: 0 10 0 10; -fx-font-size: 13px; -fx-text-fill: #ecf0f1; -fx-font-weight: bold;"/>
-        </ToolBar>
-    </top>
-    <center>
-        <StackPane>
-            <WebView fx:id="webView"
-                     prefWidth="1400"
-                     prefHeight="850"
-                     minWidth="600"
-                     minHeight="400"
-                     maxWidth="Infinity"
-                     maxHeight="Infinity"
-                     VBox.vgrow="ALWAYS"
-                     HBox.hgrow="ALWAYS"/>
-        </StackPane>
-    </center>
-</BorderPane>
+<VBox xmlns="http://javafx.com/javafx/17.0.2-ea" 
+      xmlns:fx="http://javafx.com/fxml/1"
+      fx:controller="com.antennes.controller.MapController"
+      spacing="0" style="-fx-background-color: #1a1a1a;">
+    
+    <!-- Compact Professional Header -->
+    <HBox style="-fx-background-color: linear-gradient(135deg, #2c3e50 0%, #3498db 50%, #2c3e50 100%); -fx-padding: 12 20 12 20; -fx-alignment: center-left;">
+        <HBox spacing="10" alignment="CENTER_LEFT">
+            <Label text="🌐" style="-fx-font-size: 20px; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.4), 4, 0, 1, 1);"/>
+            <VBox spacing="1">
+                <Label text="NETWORK COVERAGE DASHBOARD" 
+                       style="-fx-font-size: 16px; -fx-font-weight: bold; -fx-text-fill: white; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.3), 3, 0, 1, 1);"/>
+                <Label text="Enterprise Monitoring Platform" 
+                       style="-fx-font-size: 9px; -fx-text-fill: rgba(255,255,255,0.8); -fx-font-weight: 500;"/>
+            </VBox>
+        </HBox>
+        
+        <Region HBox.hgrow="ALWAYS"/>
+        
+        <HBox spacing="6" alignment="CENTER_RIGHT">
+            <Label text="●" style="-fx-text-fill: #2ecc71; -fx-font-size: 10px; -fx-effect: dropshadow(gaussian, #2ecc71, 2, 0, 0, 0);"/>
+            <Label text="LIVE" style="-fx-font-size: 10px; -fx-text-fill: white; -fx-font-weight: bold;"/>
+        </HBox>
+    </HBox>
+
+    <!-- Ultra Compact Control Panel - PERFECTLY ALIGNED -->
+    <HBox style="-fx-background-color: #2c3e50; -fx-padding: 10 15 10 15; -fx-border-color: #34495e; -fx-border-width: 0 0 1 0; -fx-spacing: 20;" 
+          alignment="TOP_LEFT">
+        
+        <!-- Heatmap Button - Même style que les autres -->
+        <VBox spacing="3" alignment="TOP_LEFT" style="-fx-padding: 2 0 0 0;">
+            <Label text="VISUALIZATION" 
+                   style="-fx-font-size: 8px; -fx-text-fill: #aab7b8; -fx-font-weight: bold; -fx-letter-spacing: 0.5px;"/>
+            <Button fx:id="toggleButton" text="🔥 HEATMAP" onAction="#toggleView" 
+                    style="-fx-background-color: linear-gradient(135deg, #e74c3c, #c0392b); 
+                           -fx-text-fill: white; -fx-font-weight: bold; -fx-font-size: 11px;
+                           -fx-padding: 6 12 6 12; -fx-background-radius: 4;
+                           -fx-effect: dropshadow(gaussian, rgba(231,76,60,0.3), 4, 0, 0, 1);"/>
+        </VBox>
+        
+        <!-- Operator Filter - Même style -->
+        <VBox spacing="3" alignment="TOP_LEFT" style="-fx-padding: 2 0 0 0;">
+            <Label text="NETWORK FILTER" 
+                   style="-fx-font-size: 8px; -fx-text-fill: #aab7b8; -fx-font-weight: bold; -fx-letter-spacing: 0.5px;"/>
+            <ComboBox fx:id="operatorComboBox" promptText="All Networks" 
+                      onAction="#filterByOperator" 
+                      style="-fx-pref-width: 150; 
+                             -fx-background-color: #34495e;
+                             -fx-background-radius: 4;
+                             -fx-border-color: #3498db;
+                             -fx-border-radius: 4;
+                             -fx-border-width: 1;
+                             -fx-font-size: 11px;
+                             -fx-text-fill: white;
+                             -fx-padding: 5 8 5 8;"/>
+        </VBox>
+
+        <!-- Status Display - Même style -->
+        <VBox spacing="3" alignment="TOP_LEFT" style="-fx-padding: 2 0 0 0;">
+            <Label text="SYSTEM STATUS" 
+                   style="-fx-font-size: 8px; -fx-text-fill: #aab7b8; -fx-font-weight: bold; -fx-letter-spacing: 0.5px;"/>
+            <Label fx:id="antennaCountLabel" text="Loading..." 
+                   style="-fx-font-weight: bold; -fx-font-size: 11px; -fx-text-fill: #ecf0f1;
+                          -fx-padding: 5 12 5 12; -fx-background-color: #34495e;
+                          -fx-background-radius: 4; -fx-border-color: #3498db; 
+                          -fx-border-radius: 4; -fx-border-width: 1;
+                          -fx-min-width: 120; -fx-alignment: center;"/>
+        </VBox>
+
+        <Region HBox.hgrow="ALWAYS"/>
+
+        <!-- Quick Status - Même style -->
+        <VBox spacing="3" alignment="TOP_RIGHT" style="-fx-padding: 2 0 0 0;">
+            <Label text="SYSTEM" 
+                   style="-fx-font-size: 8px; -fx-text-fill: #aab7b8; -fx-font-weight: bold; -fx-letter-spacing: 0.5px; -fx-alignment: center-right;"/>
+            <HBox spacing="6" alignment="CENTER_RIGHT">
+                <Label text="⚡" style="-fx-font-size: 10px;"/>
+                <Label text="REALTIME" style="-fx-font-size: 9px; -fx-text-fill: #ecf0f1; -fx-font-weight: bold;"/>
+            </HBox>
+        </VBox>
+    </HBox>
+
+    <!-- Maximized Map Container -->
+    <VBox VBox.vgrow="ALWAYS" style="-fx-padding: 0;">
+        <WebView fx:id="webView" VBox.vgrow="ALWAYS"/>
+    </VBox>
+
+    <!-- Compact Professional Footer -->
+    <HBox style="-fx-background-color: #1a252f; -fx-padding: 6 15 6 15;" alignment="CENTER_LEFT" spacing="12">
+        <HBox spacing="8" alignment="CENTER_LEFT">
+            <Label text="🛰️" style="-fx-font-size: 10px;"/>
+            <Label text="National Telecommunications Infrastructure" 
+                   style="-fx-font-size: 9px; -fx-text-fill: #ecf0f1; -fx-font-weight: bold;"/>
+        </HBox>
+        <Region HBox.hgrow="ALWAYS"/>
+        <HBox spacing="10" alignment="CENTER_RIGHT">
+            <Label text="🔒 Secure" style="-fx-font-size: 8px; -fx-text-fill: #2ecc71;"/>
+            <Label text="|" style="-fx-font-size: 8px; -fx-text-fill: #566573;"/>
+            <Label text="v2.1.0" style="-fx-font-size: 8px; -fx-text-fill: #95a5a6; -fx-font-weight: bold;"/>
+        </HBox>
+    </HBox>
+</VBox>

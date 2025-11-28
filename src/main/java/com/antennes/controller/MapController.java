@@ -1,198 +1,206 @@
 package com.antennes.controller;
 
+import com.antennes.database.AntenneDao;
+import com.antennes.ml.PredictionService;
 import com.antennes.model.Antenne;
-import com.antennes.service.CsvService;
+import com.antennes.service.CoverageService;
 import javafx.application.Platform;
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
 import javafx.concurrent.Worker;
 import javafx.fxml.FXML;
+import javafx.scene.control.Button;
+import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
 import javafx.scene.web.WebEngine;
 import javafx.scene.web.WebView;
 
-import java.util.List;
-import java.util.Locale;
+import java.util.*;
+import java.util.stream.Collectors;
 
 public class MapController {
 
     @FXML private WebView webView;
     @FXML private Label antennaCountLabel;
+    @FXML private Button toggleButton;
+    @FXML private ComboBox<String> operatorComboBox;
 
     private WebEngine engine;
     private List<Antenne> allData;
+    private List<Antenne> filteredData;
     private boolean mapLoaded = false;
+    private final CoverageService coverageService = new CoverageService();
+    private boolean showingHeatmap = false;
+    private String selectedOperator = "ALL";
+
+    private final AntenneDao dao = new AntenneDao();
 
     @FXML
     public void initialize() {
-        // Enable context menu and interactions on WebView
+        System.out.println("=== INITIALISATION MAPCONTROLLER (SQLite + IA Prédiction) ===");
+
         webView.setContextMenuEnabled(true);
-
         engine = webView.getEngine();
-
-        // Enable JavaScript (should be enabled by default, but let's be explicit)
         engine.setJavaScriptEnabled(true);
+        engine.setOnAlert(event -> System.out.println("JS ALERT: " + event.getData()));
 
-        // Enable console logging from JavaScript
-        engine.setOnAlert(event -> System.out.println("JS Alert: " + event.getData()));
+        dao.createTableIfNotExists();
+        dao.importCsvIfEmpty();
 
-        // Log JavaScript errors
-        engine.setOnError(event -> {
-            System.err.println("WebView Error: " + event.getMessage());
-        });
+        allData = dao.findAll();
 
-        // Set user agent to avoid potential blocking
-        engine.setUserAgent("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36");
+        // ================== PRÉDICTION IA ==================
+        System.out.println("Lancement de l'IA pour prédire les pannes...");
+        var predictor = new PredictionService();
+        allData.forEach(a -> a.setFailureRisk(predictor.predictRisk(a)));
+        System.out.println("Prédiction IA terminée !");
 
-        allData = CsvService.loadFromResources();
-        System.out.println("ANTENNES CHARGÉES: " + allData.size());
+        filteredData = new ArrayList<>(allData);
 
-        // Update antenna count label
+        System.out.println("Loaded " + allData.size() + " antennas from SQLite + IA ready");
+
+        initializeOperatorFilter();
+
         if (antennaCountLabel != null) {
-            antennaCountLabel.setText(allData.size() + " antennes 4G");
+            antennaCountLabel.setText("IA Active – " + allData.size() + " antennes");
         }
 
-        // Single listener for load worker state
         engine.getLoadWorker().stateProperty().addListener((obs, oldState, newState) -> {
-            System.out.println("WebView state changed: " + oldState + " -> " + newState);
-
             if (newState == Worker.State.SUCCEEDED) {
-                System.out.println("Carte chargée avec succès !");
-
-                // Inject console.log interceptor to capture JavaScript logs
-                try {
-                    engine.executeScript(
-                        "var originalLog = console.log;" +
-                        "var originalError = console.error;" +
-                        "console.log = function(message) { " +
-                        "    originalLog(message); " +
-                        "};" +
-                        "console.error = function(message) { " +
-                        "    originalError(message); " +
-                        "};"
-                    );
-                    System.out.println("Console interceptor injected");
-                } catch (Exception e) {
-                    System.err.println("Error injecting console: " + e.getMessage());
-                }
-
+                System.out.println("Map loaded successfully");
                 mapLoaded = true;
-
-                // Wait a bit for the map to fully initialize before loading data
+                updateToggleButton();
                 Platform.runLater(() -> {
-                    try {
-                        Thread.sleep(500);
-                    } catch (InterruptedException e) {
-                        Thread.currentThread().interrupt();
-                    }
+                    try { Thread.sleep(1000); } catch (InterruptedException ignored) {}
                     invalidateMapSize();
-                    loadData();
+                    showAntennas();
                 });
-            } else if (newState == Worker.State.FAILED) {
-                System.err.println("Failed to load map!");
-                Throwable exception = engine.getLoadWorker().getException();
-                if (exception != null) {
-                    exception.printStackTrace();
-                }
             }
         });
 
         webView.widthProperty().addListener((obs, old, newVal) -> invalidateMapSize());
         webView.heightProperty().addListener((obs, old, newVal) -> invalidateMapSize());
 
-        // Load map last
         loadMap();
+    }
+
+    private void initializeOperatorFilter() {
+        if (operatorComboBox != null) {
+            Set<String> operators = allData.stream()
+                .map(Antenne::getNetwork)
+                .filter(Objects::nonNull)
+                .collect(Collectors.toSet());
+
+            List<String> operatorList = new ArrayList<>(operators);
+            Collections.sort(operatorList);
+            operatorList.add(0, "TOUS");
+
+            ObservableList<String> observableList = FXCollections.observableArrayList(operatorList);
+            operatorComboBox.setItems(observableList);
+            operatorComboBox.setValue("TOUS");
+        }
+    }
+
+    @FXML
+    private void filterByOperator() {
+        if (operatorComboBox == null) return;
+        String selected = operatorComboBox.getValue();
+
+        if (selected == null || "TOUS".equals(selected)) {
+            filteredData = new ArrayList<>(allData);
+            selectedOperator = "ALL";
+        } else {
+            filteredData = dao.findByOperator(selected);
+            selectedOperator = selected;
+        }
+
+        if (showingHeatmap) showCoverageHeatmap();
+        else showAntennas();
+
+        if (antennaCountLabel != null) {
+            antennaCountLabel.setText(filteredData.size() + " antennes (" + 
+                (selectedOperator.equals("ALL") ? "TOUS" : selectedOperator) + ")");
+        }
+    }
+
+    private void updateToggleButton() {
+        if (toggleButton != null) {
+            toggleButton.setText(showingHeatmap ? "See Antennas" : "See Heatmap");
+            toggleButton.setStyle(showingHeatmap 
+                ? "-fx-background-color: #2ecc71; -fx-text-fill: white; -fx-font-weight: bold;"
+                : "-fx-background-color: #e74c3c; -fx-text-fill: white; -fx-font-weight: bold;");
+        }
     }
 
     private void invalidateMapSize() {
         if (mapLoaded) {
             Platform.runLater(() -> {
-                try {
-                    // For Canvas-based map, we need to trigger resize
-                    engine.executeScript("if (typeof resizeCanvas === 'function') { resizeCanvas(); console.log('Map resized'); }");
-                } catch (Exception e) {
-                    System.err.println("Error invalidating map size: " + e.getMessage());
-                }
+                try { engine.executeScript("if (typeof resizeCanvas === 'function') resizeCanvas();"); }
+                catch (Exception ignored) {}
             });
         }
     }
 
-    @FXML
-    private void loadData() {
+    @FXML private void showAntennas() {
         if (!mapLoaded) return;
-
         Platform.runLater(() -> {
-            // All data is 4G, no filtering needed
-            System.out.println("Préparation de " + allData.size() + " antennes 4G pour chargement dynamique");
-
-            String geojson = toGeoJson(allData);
             try {
-                // Send data to JavaScript for dynamic loading based on viewport
+                if (showingHeatmap) {
+                    engine.executeScript("if (window.heatmapLayer) { map.removeLayer(window.heatmapLayer); window.heatmapLayer = null; }");
+                    showingHeatmap = false;
+                }
+                String geojson = toGeoJsonWithRisk(filteredData);
                 engine.executeScript("setAllAntennas(" + geojson + ")");
-                System.out.println("Données envoyées ! (" + allData.size() + " antennes 4G disponibles)");
-            } catch (Exception e) {
-                System.err.println("Erreur GeoJSON: " + e.getMessage());
-                e.printStackTrace();
-            }
+                updateToggleButton();
+            } catch (Exception e) { e.printStackTrace(); }
         });
+    }
+
+    @FXML private void showCoverageHeatmap() {
+        if (!mapLoaded) return;
+        Platform.runLater(() -> {
+            try {
+                String data = coverageService.generateHeatmapData(filteredData);
+                engine.executeScript("if (window.heatmapLayer) map.removeLayer(window.heatmapLayer);");
+                engine.executeScript("addHeatmap(" + data + ")");
+                showingHeatmap = true;
+                if (antennaCountLabel != null) antennaCountLabel.setText("Heatmap (" + selectedOperator + ")");
+                updateToggleButton();
+            } catch (Exception e) { e.printStackTrace(); }
+        });
+    }
+
+    @FXML private void toggleView() {
+        if (showingHeatmap) showAntennas();
+        else showCoverageHeatmap();
     }
 
     private void loadMap() {
         try {
-            // Load HTML from resources - this works better with external resources in JavaFX WebView
-            java.net.URL resourceUrl = getClass().getResource("/html/map.html");
-            if (resourceUrl == null) {
-                System.err.println("ERROR: Cannot find /html/map.html in resources!");
-                System.err.println("Trying to list resources...");
-                java.net.URL htmlDir = getClass().getResource("/html/");
-                if (htmlDir != null) {
-                    System.out.println("Found /html/ directory: " + htmlDir);
-                } else {
-                    System.err.println("/html/ directory not found!");
-                }
-                return;
-            }
-
-            String mapUrl = resourceUrl.toExternalForm();
-            System.out.println("Loading map from: " + mapUrl);
-            engine.load(mapUrl);
-            System.out.println("Map load initiated");
+            java.net.URL url = getClass().getResource("/html/map.html");
+            if (url != null) engine.load(url.toExternalForm());
         } catch (Exception e) {
-            System.err.println("Error loading map HTML: " + e.getMessage());
-            e.printStackTrace();
+            System.err.println("Erreur chargement map.html: " + e.getMessage());
         }
     }
 
-    private String toGeoJson(List<Antenne> antennes) {
+    // VERSION AVEC RISQUE IA
+    private String toGeoJsonWithRisk(List<Antenne> antennes) {
         if (antennes.isEmpty()) return "{\"type\":\"FeatureCollection\",\"features\":[]}";
+        StringBuilder sb = new StringBuilder("{\"type\":\"FeatureCollection\",\"features\":[");
+        int limit = Math.min(antennes.size(), 5000);
 
-        // Pre-allocate StringBuilder with estimated size for better performance
-        int estimatedSize = antennes.size() * 150; // Approximate size per feature
-        StringBuilder sb = new StringBuilder(estimatedSize);
-        sb.append("{\"type\":\"FeatureCollection\",\"features\":[");
-
-        for (int i = 0; i < antennes.size(); i++) {
+        for (int i = 0; i < limit; i++) {
             Antenne a = antennes.get(i);
             double radiusKm = a.getRange() / 1000.0;
-            int signal = (int) a.getAverageSignal();
-            if (signal == 0) signal = generateSignal(a.getTechnology());
-
-            // Optimized: Use Locale.US to ensure decimal points (not commas) in JSON
             sb.append(String.format(Locale.US,
-                "{\"type\":\"Feature\",\"geometry\":{\"type\":\"Point\",\"coordinates\":[%.6f,%.6f]},\"properties\":{\"signal\":%d,\"tech\":\"%s\",\"radius\":%.1f,\"couverture\":\"%s\"}}",
-                a.getLon(), a.getLat(), signal, a.getTechnology(), radiusKm, a.getCouverture()
+                "{\"type\":\"Feature\",\"geometry\":{\"type\":\"Point\",\"coordinates\":[%.6f,%.6f]},\"properties\":{\"signal\":%.1f,\"tech\":\"%s\",\"radius\":%.2f,\"operator\":\"%s\",\"risk\":%.3f,\"riskColor\":\"%s\"}}",
+                a.getLon(), a.getLat(), a.getAverageSignal(), a.getTechnology(), radiusKm, a.getNetwork(),
+                a.getFailureRisk(), a.getRiskColor()
             ));
-            if (i < antennes.size() - 1) sb.append(",");
+            if (i < limit - 1) sb.append(",");
         }
         sb.append("]}");
         return sb.toString();
-    }
-
-    private int generateSignal(String tech) {
-        return switch (tech) {
-            case "2G" -> -100 + (int)(Math.random() * 45);
-            case "3G" -> -95 + (int)(Math.random() * 40);
-            case "4G" -> -90 + (int)(Math.random() * 45);
-            case "5G" -> -85 + (int)(Math.random() * 50);
-            default -> -85 + (int)(Math.random() * 40);
-        };
     }
 }

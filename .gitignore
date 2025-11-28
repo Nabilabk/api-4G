@@ -1,0 +1,14 @@
+# Maven
+target/
+
+# Java
+*.class
+
+# Database files
+*.db
+
+# VSCode settings (optional)
+.vscode/
+
+# OS files
+*.log

@@ -6,11 +6,12 @@ public class Antenne {
     private final double averageSignal;
     private final String radio;
     private final String network;
-    private final int mcc;
-    private final int mnc;
-    private final int tac;
-    private final int cid;
+    private final int mcc, mnc, tac, cid;
     private final double range;
+
+    // Nouveaux champs pour l'IA
+    private double failureRisk = 0.0;
+    private String riskLevel = "Sain";
 
     public Antenne(double lat, double lon, double averageSignal, String radio, String network,
                    int mcc, int mnc, int tac, int cid, double range) {
@@ -26,6 +27,7 @@ public class Antenne {
         this.range = range;
     }
 
+    // Getters existants
     public double getLat() { return lat; }
     public double getLon() { return lon; }
     public double getAverageSignal() { return averageSignal; }
@@ -37,12 +39,6 @@ public class Antenne {
     public int getCid() { return cid; }
     public double getRange() { return range; }
 
-    public String getCouverture() {
-        if (range >= 1000) return "Forte";
-        else if (range >= 500) return "Moyenne";
-        else return "Faible";
-    }
-
     public String getTechnology() {
         return switch (radio) {
             case "GSM" -> "2G";
@@ -53,9 +49,23 @@ public class Antenne {
         };
     }
 
+    // Nouvelles méthodes IA
+    public double getFailureRisk() { return failureRisk; }
+    public void setFailureRisk(double risk) {
+        this.failureRisk = risk;
+        this.riskLevel = risk < 0.3 ? "Sain" :
+                         risk < 0.6 ? "Risque modéré" : "Panne probable";
+    }
+    public String getRiskLevel() { return riskLevel; }
+    public String getRiskColor() {
+        if (failureRisk < 0.3) return "#2ecc71";     // vert
+        if (failureRisk < 0.6) return "#f39c12";     // orange
+        return "#e74c3c";                          // rouge
+    }
+
     @Override
     public String toString() {
-        return String.format("Antenne{lat=%.6f, lon=%.6f, range=%.0fm, couverture='%s', op='%s'}",
-                lat, lon, range, getCouverture(), network);
+        return String.format("Antenne{%.6f,%.6f | %s | %.1f dBm | risk=%.1f%%}",
+                lat, lon, network, averageSignal, failureRisk*100);
     }
 }
