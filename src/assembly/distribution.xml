@@ -1,0 +1,99 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<assembly xmlns="http://maven.apache.org/plugins/maven-assembly-plugin/assembly/1.1.2"
+          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+          xsi:schemaLocation="http://maven.apache.org/plugins/maven-assembly-plugin/assembly/1.1.2
+          http://maven.apache.org/xsd/assembly-1.1.2.xsd">
+    <id>distribution</id>
+    <formats>
+        <format>zip</format>
+        <format>tar.gz</format>
+    </formats>
+    <includeBaseDirectory>false</includeBaseDirectory>
+    
+    <fileSets>
+        <!-- Include the standalone JAR -->
+        <fileSet>
+            <directory>${project.build.directory}</directory>
+            <outputDirectory>/</outputDirectory>
+            <includes>
+                <include>${project.artifactId}-${project.version}-standalone.jar</include>
+            </includes>
+        </fileSet>
+        
+        <!-- Include regular JAR -->
+        <fileSet>
+            <directory>${project.build.directory}</directory>
+            <outputDirectory>/</outputDirectory>
+            <includes>
+                <include>${project.artifactId}-${project.version}.jar</include>
+            </includes>
+        </fileSet>
+        
+        <!-- Include dependencies -->
+        <fileSet>
+            <directory>${project.build.directory}/lib</directory>
+            <outputDirectory>/lib</outputDirectory>
+            <includes>
+                <include>*.jar</include>
+            </includes>
+        </fileSet>
+        
+        <!-- Include resources -->
+        <fileSet>
+            <directory>src/main/resources</directory>
+            <outputDirectory>/resources</outputDirectory>
+            <includes>
+                <include>**/*</include>
+            </includes>
+        </fileSet>
+        
+        <!-- Include FXML files -->
+        <fileSet>
+            <directory>src/main/resources/fxml</directory>
+            <outputDirectory>/fxml</outputDirectory>
+            <includes>
+                <include>**/*.fxml</include>
+            </includes>
+        </fileSet>
+        
+        <!-- Include HTML files -->
+        <fileSet>
+            <directory>src/main/resources/html</directory>
+            <outputDirectory>/html</outputDirectory>
+            <includes>
+                <include>**/*.html</include>
+                <include>**/*.css</include>
+                <include>**/*.js</include>
+            </includes>
+        </fileSet>
+    </fileSets>
+    
+    <files>
+        <!-- README file -->
+        <file>
+            <source>README.md</source>
+            <outputDirectory>/</outputDirectory>
+            <destName>README.txt</destName>
+            <fileMode>644</fileMode>
+        </file>
+        
+        <!-- LICENSE file -->
+        <file>
+            <source>LICENSE</source>
+            <outputDirectory>/</outputDirectory>
+            <fileMode>644</fileMode>
+        </file>
+        
+        <!-- Run scripts -->
+        <file>
+            <source>run.bat</source>
+            <outputDirectory>/</outputDirectory>
+            <fileMode>755</fileMode>
+        </file>
+        <file>
+            <source>run.sh</source>
+            <outputDirectory>/</outputDirectory>
+            <fileMode>755</fileMode>
+        </file>
+    </files>
+</assembly>
