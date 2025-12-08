@@ -63,3 +63,4 @@ logs/
 build/
 out/
 bin/
+pom-for-oracle.xml
