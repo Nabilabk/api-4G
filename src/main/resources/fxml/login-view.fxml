@@ -9,10 +9,10 @@
       fx:controller="com.antennes.controller.LoginController"
       alignment="CENTER" spacing="20" 
       style="-fx-background-color: linear-gradient(135deg, #2c3e50 0%, #3498db 100%);"
-      prefWidth="450" prefHeight="600">
+      prefWidth="400" prefHeight="450">
     
     <VBox alignment="CENTER" spacing="15" 
-          style="-fx-background-color: white; -fx-background-radius: 10; -fx-padding: 40;">
+          style="-fx-background-color: white; -fx-background-radius: 10; -fx-padding: 30;">
         <effect>
             <DropShadow radius="10" offsetX="0" offsetY="5" color="rgba(0,0,0,0.3)"/>
         </effect>
@@ -25,7 +25,7 @@
         </VBox>
         
         <!-- Login Form -->
-        <VBox spacing="10" style="-fx-min-width: 300;">
+        <VBox spacing="10" style="-fx-min-width: 250;">
             <Label text="Username:" style="-fx-text-fill: #2c3e50; -fx-font-weight: bold;"/>
             <TextField fx:id="usernameField" promptText="Enter username" 
                      style="-fx-background-radius: 5; -fx-border-color: #bdc3c7; -fx-border-radius: 5; -fx-padding: 8;"/>
@@ -36,37 +36,20 @@
             
             <Label fx:id="errorLabel" text="" 
                    style="-fx-text-fill: #e74c3c; -fx-font-size: 11px; -fx-padding: 5 0 0 0;"/>
-            
-            <Button fx:id="loginButton" text="LOGIN" onAction="#handleLogin" 
+          
+        </VBox>
+
+        <VBox alignment="CENTER" spacing="10" style="-fx-padding: 20 0 0 0;">
+            <Button fx:id="loginButton" text="LOG IN" onAction="#handleLogin" 
                     style="-fx-background-color: #3498db; -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 5; -fx-padding: 10; -fx-font-size: 14px;"
                     defaultButton="true"/>
         </VBox>
+
         
-        <!-- Footer with Role Information -->
+        <!-- Simple Footer -->
         <VBox alignment="CENTER" spacing="5" style="-fx-padding: 20 0 0 0;">
             <Separator/>
-            <Label text="Available Test Accounts:" style="-fx-text-fill: #7f8c8d; -fx-font-size: 11px; -fx-font-weight: bold;"/>
-            
-            <GridPane hgap="10" vgap="5" style="-fx-padding: 5 0 0 0;">
-                <columnConstraints>
-                    <ColumnConstraints halignment="RIGHT" prefWidth="100"/>
-                    <ColumnConstraints halignment="LEFT" prefWidth="200"/>
-                </columnConstraints>
-                
-                <Label text="👑 Admin:" style="-fx-text-fill: #e74c3c; -fx-font-weight: bold;"/>
-                <Label text="admin / admin123" GridPane.columnIndex="1" 
-                       style="-fx-text-fill: #95a5a6; -fx-font-size: 10px;"/>
-                
-                <Label text="🛠️ Operator:" GridPane.rowIndex="1" style="-fx-text-fill: #3498db; -fx-font-weight: bold;"/>
-                <Label text="operator / operator123" GridPane.rowIndex="1" GridPane.columnIndex="1"
-                       style="-fx-text-fill: #95a5a6; -fx-font-size: 10px;"/>
-                
-                <Label text="👁️ Viewer:" GridPane.rowIndex="2" style="-fx-text-fill: #2ecc71; -fx-font-weight: bold;"/>
-                <Label text="viewer / viewer123" GridPane.rowIndex="2" GridPane.columnIndex="1"
-                       style="-fx-text-fill: #95a5a6; -fx-font-size: 10px;"/>
-            </GridPane>
-            
-            <Label text="Port: 4567 | JWT Authentication | Role-Based Access" 
+            <Label text="JWT Authentication | Role-Based Access" 
                    style="-fx-text-fill: #95a5a6; -fx-font-size: 9px; -fx-font-style: italic; -fx-padding: 5 0 0 0;"/>
         </VBox>
     </VBox>

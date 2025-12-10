@@ -1,0 +1,5 @@
+Manifest-Version: 1.0
+Main-Class: com.antennes.App
+Created-By: Manual Build with Heatmap Fix
+Build-Date: 2025-12-08
+Heatmap-Fix: true

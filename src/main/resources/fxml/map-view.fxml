@@ -4,182 +4,249 @@
 <?import javafx.scene.layout.*?>
 <?import javafx.scene.web.WebView?>
 <?import javafx.geometry.Insets?>
+<?import javafx.scene.shape.Rectangle?>
+<?import javafx.scene.effect.DropShadow?>
 
-<VBox xmlns="http://javafx.com/javafx/17.0.2-ea" 
+<VBox xmlns="http://javafx.com/javafx/21.0.2-ea" 
       xmlns:fx="http://javafx.com/fxml/1"
       fx:controller="com.antennes.controller.MapController"
-      spacing="0" style="-fx-background-color: #1a1a1a;">
-    
-    <!-- Compact Professional Header -->
-    <HBox style="-fx-background-color: linear-gradient(135deg, #2c3e50 0%, #3498db 50%, #2c3e50 100%); -fx-padding: 12 20 12 20; -fx-alignment: center-left;">
-        <HBox spacing="10" alignment="CENTER_LEFT">
-            <Label text="🌐" style="-fx-font-size: 20px; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.4), 4, 0, 1, 1);"/>
-            <VBox spacing="1">
+      spacing="0" style="-fx-background-color: #0d1117;">
+
+    <!-- Header remains the same -->
+    <HBox style="-fx-background-color: linear-gradient(135deg, #1a1f2e 0%, #2563eb 50%, #1a1f2e 100%); -fx-padding: 16 24 16 24; -fx-alignment: center-left;">
+        <HBox spacing="12" alignment="CENTER_LEFT">
+            <Label text="🛰" style="-fx-font-size: 24px; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.4), 4, 0, 1, 1);"/>
+            <VBox spacing="2">
                 <Label text="NETWORK COVERAGE DASHBOARD" 
-                       style="-fx-font-size: 16px; -fx-font-weight: bold; -fx-text-fill: white; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.3), 3, 0, 1, 1);"/>
+                       style="-fx-font-size: 18px; -fx-font-weight: 900; -fx-text-fill: white; -fx-letter-spacing: 0.5px;"/>
                 <Label text="Enterprise Monitoring Platform with REST API" 
-                       style="-fx-font-size: 9px; -fx-text-fill: rgba(255,255,255,0.8); -fx-font-weight: 500;"/>
+                       style="-fx-font-size: 11px; -fx-text-fill: rgba(255,255,255,0.85); -fx-font-weight: 500;"/>
             </VBox>
         </HBox>
         
         <Region HBox.hgrow="ALWAYS"/>
         
-        <HBox spacing="6" alignment="CENTER_RIGHT">
-            <Label text="●" style="-fx-text-fill: #2ecc71; -fx-font-size: 10px; -fx-effect: dropshadow(gaussian, #2ecc71, 2, 0, 0, 0);"/>
-            <Label text="LIVE API" style="-fx-font-size: 10px; -fx-text-fill: white; -fx-font-weight: bold;"/>
+        <!-- User Role Badge -->
+        <HBox spacing="8" alignment="CENTER_RIGHT" style="-fx-padding: 0 12 0 0;">
+            <VBox spacing="2" alignment="CENTER_RIGHT">
+                <Label text="ACTIVE SESSION" 
+                       style="-fx-font-size: 9px; -fx-text-fill: rgba(255,255,255,0.8); -fx-font-weight: bold; -fx-letter-spacing: 0.7px;"/>
+                <Label fx:id="roleLabel" text="Administrator" 
+                       style="-fx-font-weight: 900; -fx-font-size: 12px; -fx-text-fill: white;
+                              -fx-background-color: linear-gradient(135deg, rgba(37, 99, 235, 0.2), rgba(59, 130, 246, 0.3));
+                              -fx-background-radius: 6; -fx-padding: 4 12 4 12;
+                              -fx-border-color: rgba(96, 165, 250, 0.4); -fx-border-radius: 6; -fx-border-width: 1;
+                              -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.2), 2, 0, 1, 1);"/>
+            </VBox>
+            <Label text="●" style="-fx-text-fill: #22c55e; -fx-font-size: 12px; 
+                    -fx-effect: dropshadow(gaussian, #22c55e, 4, 0, 0, 0);"/>
         </HBox>
     </HBox>
 
-    <!-- Ultra Compact Control Panel - PERFECTLY ALIGNED -->
-    <HBox style="-fx-background-color: #2c3e50; -fx-padding: 10 15 10 15; -fx-border-color: #34495e; -fx-border-width: 0 0 1 0; -fx-spacing: 20;" 
-          alignment="TOP_LEFT">
+    <!-- ENHANCED FILTER SECTION - PROFESSIONAL REDESIGN -->
+    <HBox style="-fx-background-color: linear-gradient(180deg, #1a1f2e 0%, #151925 100%); 
+                 -fx-padding: 14 24 14 24; 
+                 -fx-border-color: #2d3748; 
+                 -fx-border-width: 0 0 1 0; 
+                 -fx-spacing: 20;" 
+          alignment="CENTER_LEFT">
         
-        <!-- Role Display -->
-        <VBox spacing="3" alignment="TOP_LEFT" style="-fx-padding: 2 0 0 0;">
-            <Label text="USER ROLE" 
-                   style="-fx-font-size: 8px; -fx-text-fill: #aab7b8; -fx-font-weight: bold; -fx-letter-spacing: 0.5px;"/>
-            <Label fx:id="roleLabel" text="Not Logged In" 
-                   style="-fx-font-weight: bold; -fx-font-size: 11px; -fx-text-fill: #ecf0f1;
-                          -fx-padding: 5 12 5 12; -fx-background-color: #34495e;
-                          -fx-background-radius: 4; -fx-border-color: #9b59b6; 
-                          -fx-border-radius: 4; -fx-border-width: 1;
-                          -fx-min-width: 120; -fx-alignment: center;"/>
-        </VBox>
-        
-        <!-- Heatmap Button -->
-        <VBox spacing="3" alignment="TOP_LEFT" style="-fx-padding: 2 0 0 0;">
-            <Label text="VISUALIZATION" 
-                   style="-fx-font-size: 8px; -fx-text-fill: #aab7b8; -fx-font-weight: bold; -fx-letter-spacing: 0.5px;"/>
-            <Button fx:id="toggleButton" text="🔥 HEATMAP" onAction="#toggleView" 
-                    style="-fx-background-color: linear-gradient(135deg, #e74c3c, #c0392b); 
-                           -fx-text-fill: white; -fx-font-weight: bold; -fx-font-size: 11px;
-                           -fx-padding: 6 12 6 12; -fx-background-radius: 4;
-                           -fx-effect: dropshadow(gaussian, rgba(231,76,60,0.3), 4, 0, 0, 1);"/>
-        </VBox>
-        
-        <!-- Operator Filter -->
-        <HBox fx:id="operatorFilterBox" spacing="3" alignment="TOP_LEFT" style="-fx-padding: 2 0 0 0;">
-            <VBox spacing="3" alignment="TOP_LEFT">
-                <Label text="NETWORK FILTER" 
-                       style="-fx-font-size: 8px; -fx-text-fill: #aab7b8; -fx-font-weight: bold; -fx-letter-spacing: 0.5px;"/>
-                <ComboBox fx:id="operatorComboBox" promptText="All Networks" 
+        <!-- Left side: View Controls -->
+        <HBox spacing="20" alignment="CENTER_LEFT">
+            <!-- Visualization Toggle -->
+            <VBox spacing="4" alignment="TOP_LEFT">
+                <Label text="VISUALIZATION MODE" 
+                       style="-fx-font-size: 9px; -fx-text-fill: #94a3b8; -fx-font-weight: 800; -fx-letter-spacing: 0.8px;"/>
+                <Button fx:id="toggleButton" text="HEATMAP VIEW" onAction="#toggleView" 
+                        style="-fx-background-color: linear-gradient(135deg, #ef4444, #dc2626); 
+                               -fx-text-fill: white; -fx-font-weight: 900; -fx-font-size: 11px;
+                               -fx-padding: 8 16 8 16; -fx-background-radius: 8;
+                               -fx-min-width: 120; -fx-min-height: 32;
+                               -fx-border-color: rgba(239, 68, 68, 0.3); -fx-border-width: 1; -fx-border-radius: 8;
+                               -fx-effect: dropshadow(gaussian, rgba(239, 68, 68, 0.3), 4, 0, 0, 2);
+                               -fx-cursor: hand;"/>
+            </VBox>
+            
+            <!-- Separator -->
+            <Rectangle width="1" height="28" fill="#2d3748" stroke="transparent"/>
+        </HBox>
+
+        <!-- Middle: Data Filters -->
+        <HBox spacing="20" alignment="CENTER_LEFT" style="-fx-padding: 0 0 0 8;">
+            <!-- Operator Filter -->
+            <VBox spacing="4" alignment="TOP_LEFT">
+                <HBox spacing="6" alignment="CENTER_LEFT">
+                    <Label text="OPERATOR" 
+                           style="-fx-font-size: 9px; -fx-text-fill: #94a3b8; -fx-font-weight: 800; -fx-letter-spacing: 0.8px;"/>
+                    <Label text="●" style="-fx-text-fill: #3b82f6; -fx-font-size: 8px;"/>
+                </HBox>
+                <ComboBox fx:id="operatorComboBox" promptText="All Operators" 
                           onAction="#filterByOperator" 
-                          style="-fx-pref-width: 150; 
-                                 -fx-background-color: #34495e;
-                                 -fx-background-radius: 4;
-                                 -fx-border-color: #3498db;
-                                 -fx-border-radius: 4;
-                                 -fx-border-width: 1;
-                                 -fx-font-size: 11px;
+                          style="-fx-pref-width: 160; -fx-min-height: 32;
+                                 -fx-background-color: rgba(30, 41, 59, 0.8);
+                                 -fx-background-radius: 8;
+                                 -fx-border-color: #3b82f6;
+                                 -fx-border-radius: 8;
+                                 -fx-border-width: 1.5;
+                                 -fx-font-size: 12px;
                                  -fx-text-fill: white;
-                                 -fx-padding: 5 8 5 8;"/>
+                                 -fx-font-weight: 600;
+                                 -fx-padding: 0 12 0 12;
+                                 -fx-cursor: hand;"/>
             </VBox>
-        </HBox>
 
-        <!-- Risk Level Filter -->
-        <HBox fx:id="riskFilterBox" spacing="3" alignment="TOP_LEFT" style="-fx-padding: 2 0 0 0;">
-            <VBox spacing="3" alignment="TOP_LEFT">
-                <Label text="RISK FILTER" 
-                       style="-fx-font-size: 8px; -fx-text-fill: #aab7b8; -fx-font-weight: bold; -fx-letter-spacing: 0.5px;"/>
-                <ComboBox fx:id="riskComboBox" promptText="All Risk Levels" 
+            <!-- Risk Filter -->
+            <VBox spacing="4" alignment="TOP_LEFT">
+                <HBox spacing="6" alignment="CENTER_LEFT">
+                    <Label text="RISK LEVEL" 
+                           style="-fx-font-size: 9px; -fx-text-fill: #94a3b8; -fx-font-weight: 800; -fx-letter-spacing: 0.8px;"/>
+                    <Label text="●" style="-fx-text-fill: #ef4444; -fx-font-size: 8px;"/>
+                </HBox>
+                <ComboBox fx:id="riskComboBox" promptText="All Risks" 
                           onAction="#filterByRiskLevel" 
-                          style="-fx-pref-width: 140; 
-                                 -fx-background-color: #34495e;
-                                 -fx-background-radius: 4;
-                                 -fx-border-color: #e74c3c;
-                                 -fx-border-radius: 4;
-                                 -fx-border-width: 1;
-                                 -fx-font-size: 11px;
+                          style="-fx-pref-width: 140; -fx-min-height: 32;
+                                 -fx-background-color: rgba(30, 41, 59, 0.8);
+                                 -fx-background-radius: 8;
+                                 -fx-border-color: #ef4444;
+                                 -fx-border-radius: 8;
+                                 -fx-border-width: 1.5;
+                                 -fx-font-size: 12px;
                                  -fx-text-fill: white;
-                                 -fx-padding: 5 8 5 8;"/>
+                                 -fx-font-weight: 600;
+                                 -fx-padding: 0 12 0 12;
+                                 -fx-cursor: hand;"/>
+            </VBox>
+
+            <!-- City Filter -->
+            <VBox spacing="4" alignment="TOP_LEFT">
+                <HBox spacing="6" alignment="CENTER_LEFT">
+                    <Label text="CITY" 
+                           style="-fx-font-size: 9px; -fx-text-fill: #94a3b8; -fx-font-weight: 800; -fx-letter-spacing: 0.8px;"/>
+                    <Label text="●" style="-fx-text-fill: #8b5cf6; -fx-font-size: 8px;"/>
+                </HBox>
+                <ComboBox fx:id="cityComboBox" editable="true" promptText="Select City"
+                          onAction="#filterByCity"
+                          style="-fx-pref-width: 140; -fx-min-height: 32;
+                                 -fx-background-color: rgba(30, 41, 59, 0.8);
+                                 -fx-background-radius: 8;
+                                 -fx-border-color: #8b5cf6;
+                                 -fx-border-radius: 8;
+                                 -fx-border-width: 1.5;
+                                 -fx-font-size: 12px;
+                                 -fx-text-fill: white;
+                                 -fx-font-weight: 600;
+                                 -fx-padding: 0 12 0 12;
+                                 -fx-cursor: hand;"/>
             </VBox>
         </HBox>
 
-        <!-- API Controls Section -->
-        <HBox fx:id="apiControlsBox" spacing="3" alignment="TOP_LEFT" style="-fx-padding: 2 0 0 0;">
-            <VBox spacing="3" alignment="TOP_LEFT">
+        <!-- Right side: Action Controls -->
+        <Region HBox.hgrow="ALWAYS"/>
+        
+        <HBox spacing="16" alignment="CENTER_RIGHT">
+            <!-- Risk View Toggle -->
+            <VBox spacing="4" alignment="TOP_LEFT" style="-fx-padding: 0 8 0 0;">
+                <Label text="RISK VISUALIZATION" 
+                       style="-fx-font-size: 9px; -fx-text-fill: #94a3b8; -fx-font-weight: 800; -fx-letter-spacing: 0.8px;"/>
+                <CheckBox fx:id="riskFilterCheckBox" 
+                          text="Show Risk Overlay" 
+                          style="-fx-text-fill: white; -fx-font-size: 11px; -fx-font-weight: 600;
+                                 -fx-padding: 6 0 6 0;"/>
+            </VBox>
+
+            <!-- Separator -->
+            <Rectangle width="1" height="28" fill="#2d3748" stroke="transparent"/>
+
+            <!-- API Controls -->
+            <VBox spacing="4" alignment="TOP_LEFT">
                 <Label text="API CONTROLS" 
-                       style="-fx-font-size: 8px; -fx-text-fill: #aab7b8; -fx-font-weight: bold; -fx-letter-spacing: 0.5px;"/>
-                <HBox spacing="5">
-                    <Button fx:id="testApiButton" text="🔌 TEST API" 
-                            style="-fx-background-color: linear-gradient(135deg, #2ecc71, #27ae60); 
-                                   -fx-text-fill: white; -fx-font-weight: bold; -fx-font-size: 11px;
-                                   -fx-padding: 6 12 6 12; -fx-background-radius: 4;
-                                   -fx-effect: dropshadow(gaussian, rgba(46,204,113,0.3), 4, 0, 0, 1);"/>
-                    <Button fx:id="apiInfoButton" text="📋 API INFO"
-                            style="-fx-background-color: linear-gradient(135deg, #3498db, #2980b9); 
-                                   -fx-text-fill: white; -fx-font-weight: bold; -fx-font-size: 11px;
-                                   -fx-padding: 6 12 6 12; -fx-background-radius: 4;
-                                   -fx-effect: dropshadow(gaussian, rgba(52,152,219,0.3), 4, 0, 0, 1);"/>
+                       style="-fx-font-size: 9px; -fx-text-fill: #94a3b8; -fx-font-weight: 800; -fx-letter-spacing: 0.8px;"/>
+                <HBox spacing="8">
+                    <Button fx:id="testApiButton" text="TEST API" 
+                            style="-fx-background-color: linear-gradient(135deg, #22c55e, #16a34a); 
+                                   -fx-text-fill: white; -fx-font-weight: 900; -fx-font-size: 11px;
+                                   -fx-padding: 8 16 8 16; -fx-background-radius: 8;
+                                   -fx-min-width: 90; -fx-min-height: 32;
+                                   -fx-border-color: rgba(34, 197, 94, 0.3); -fx-border-width: 1; -fx-border-radius: 8;
+                                   -fx-effect: dropshadow(gaussian, rgba(34, 197, 94, 0.2), 4, 0, 0, 2);
+                                   -fx-cursor: hand;"/>
+                    <Button fx:id="apiInfoButton" text="API INFO"
+                            style="-fx-background-color: linear-gradient(135deg, #3b82f6, #2563eb); 
+                                   -fx-text-fill: white; -fx-font-weight: 900; -fx-font-size: 11px;
+                                   -fx-padding: 8 16 8 16; -fx-background-radius: 8;
+                                   -fx-min-width: 90; -fx-min-height: 32;
+                                   -fx-border-color: rgba(59, 130, 246, 0.3); -fx-border-width: 1; -fx-border-radius: 8;
+                                   -fx-effect: dropshadow(gaussian, rgba(59, 130, 246, 0.2), 4, 0, 0, 2);
+                                   -fx-cursor: hand;"/>
                 </HBox>
             </VBox>
+
+            <!-- Export Data -->
+            <VBox spacing="4" alignment="TOP_LEFT">
+                <Label text="DATA EXPORT" 
+                       style="-fx-font-size: 9px; -fx-text-fill: #94a3b8; -fx-font-weight: 800; -fx-letter-spacing: 0.8px;"/>
+                <Button fx:id="exportButton" text="EXPORT DATA" onAction="#exportData" 
+                        style="-fx-background-color: linear-gradient(135deg, #8b5cf6, #7c3aed); 
+                               -fx-text-fill: white; -fx-font-weight: 900; -fx-font-size: 11px;
+                               -fx-padding: 8 16 8 16; -fx-background-radius: 8;
+                               -fx-min-width: 110; -fx-min-height: 32;
+                               -fx-border-color: rgba(139, 92, 246, 0.3); -fx-border-width: 1; -fx-border-radius: 8;
+                               -fx-effect: dropshadow(gaussian, rgba(139, 92, 246, 0.2), 4, 0, 0, 2);
+                               -fx-cursor: hand;"/>
+            </VBox>
+
+            <!-- Separator -->
+            <Rectangle width="1" height="28" fill="#2d3748" stroke="transparent"/>
+
+            <!-- Session Controls -->
+            <VBox spacing="4" alignment="TOP_LEFT">
+                <Label text="SESSION" 
+                       style="-fx-font-size: 9px; -fx-text-fill: #94a3b8; -fx-font-weight: 800; -fx-letter-spacing: 0.8px;"/>
+                <Button fx:id="logoutButton" text="LOGOUT" onAction="#handleLogout"
+                        style="-fx-background-color: linear-gradient(135deg, #64748b, #475569); 
+                               -fx-text-fill: white; -fx-font-weight: 900; -fx-font-size: 11px;
+                               -fx-padding: 8 24 8 24; -fx-background-radius: 8;
+                               -fx-min-width: 100; -fx-min-height: 32;
+                               -fx-border-color: rgba(100, 116, 139, 0.3); -fx-border-width: 1; -fx-border-radius: 8;
+                               -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.1), 2, 0, 0, 1);
+                               -fx-cursor: hand;"/>
+            </VBox>
         </HBox>
-
-        <!-- Export Button -->
-        <VBox spacing="3" alignment="TOP_LEFT" style="-fx-padding: 2 0 0 0;">
-            <Label text="DATA EXPORT" 
-                   style="-fx-font-size: 8px; -fx-text-fill: #aab7b8; -fx-font-weight: bold; -fx-letter-spacing: 0.5px;"/>
-            <Button fx:id="exportButton" text="📊 EXPORT" onAction="#exportData" 
-                    style="-fx-background-color: linear-gradient(135deg, #9b59b6, #8e44ad); 
-                           -fx-text-fill: white; -fx-font-weight: bold; -fx-font-size: 11px;
-                           -fx-padding: 6 12 6 12; -fx-background-radius: 4;
-                           -fx-effect: dropshadow(gaussian, rgba(155,89,182,0.3), 4, 0, 0, 1);"/>
-        </VBox>
-        <!-- Logout Button -->
-<VBox spacing="3" alignment="TOP_LEFT" style="-fx-padding: 2 0 0 0;">
-    <Label text="SESSION" 
-           style="-fx-font-size: 8px; -fx-text-fill: #aab7b8; -fx-font-weight: bold; -fx-letter-spacing: 0.5px;"/>
-    <Button fx:id="logoutButton" text="🚪 LOGOUT" 
-            style="-fx-background-color: linear-gradient(135deg, #95a5a6, #7f8c8d); 
-                   -fx-text-fill: white; -fx-font-weight: bold; -fx-font-size: 11px;
-                   -fx-padding: 6 12 6 12; -fx-background-radius: 4;
-                   -fx-effect: dropshadow(gaussian, rgba(149,165,166,0.3), 4, 0, 0, 1);"/>
-</VBox>
-
-        <!-- Status Display -->
-        <VBox spacing="3" alignment="TOP_LEFT" style="-fx-padding: 2 0 0 0;">
-            <Label text="SYSTEM STATUS" 
-                   style="-fx-font-size: 8px; -fx-text-fill: #aab7b8; -fx-font-weight: bold; -fx-letter-spacing: 0.5px;"/>
-            <Label fx:id="antennaCountLabel" text="Loading..." 
-                   style="-fx-font-weight: bold; -fx-font-size: 11px; -fx-text-fill: #ecf0f1;
-                          -fx-padding: 5 12 5 12; -fx-background-color: #34495e;
-                          -fx-background-radius: 4; -fx-border-color: #3498db; 
-                          -fx-border-radius: 4; -fx-border-width: 1;
-                          -fx-min-width: 120; -fx-alignment: center;"/>
-        </VBox>
-
-        <Region HBox.hgrow="ALWAYS"/>
-
-        <!-- Quick Status -->
-        <VBox spacing="3" alignment="TOP_RIGHT" style="-fx-padding: 2 0 0 0;">
-            <Label text="API STATUS" 
-                   style="-fx-font-size: 8px; -fx-text-fill: #aab7b8; -fx-font-weight: bold; -fx-letter-spacing: 0.5px; -fx-alignment: center-right;"/>
-            <HBox spacing="6" alignment="CENTER_RIGHT">
-                <Label text="⚡" style="-fx-font-size: 10px;"/>
-                <Label text="PORT 4567" style="-fx-font-size: 9px; -fx-text-fill: #ecf0f1; -fx-font-weight: bold;"/>
-            </HBox>
-        </VBox>
     </HBox>
 
-    <!-- Maximized Map Container -->
-    <VBox VBox.vgrow="ALWAYS" style="-fx-padding: 0;">
+    <!-- Map Container -->
+    <VBox VBox.vgrow="ALWAYS" style="-fx-padding: 0; -fx-background-color: #0f172a;">
         <WebView fx:id="webView" VBox.vgrow="ALWAYS"/>
     </VBox>
 
-    <!-- Compact Professional Footer with API Info -->
-    <HBox style="-fx-background-color: #1a252f; -fx-padding: 6 15 6 15;" alignment="CENTER_LEFT" spacing="12">
-        <HBox spacing="8" alignment="CENTER_LEFT">
-            <Label text="🛰️" style="-fx-font-size: 10px;"/>
-            <Label text="National Telecommunications Infrastructure - REST API Enabled" 
-                   style="-fx-font-size: 9px; -fx-text-fill: #ecf0f1; -fx-font-weight: bold;"/>
+    <!-- Enhanced Footer -->
+    <HBox style="-fx-background-color: #0f172a; 
+                 -fx-padding: 10 24 10 24; 
+                 -fx-border-color: #1e293b; 
+                 -fx-border-width: 1 0 0 0;" 
+          alignment="CENTER_LEFT" spacing="12">
+        <HBox spacing="10" alignment="CENTER_LEFT">
+            <Label text="🛰" style="-fx-font-size: 14px; -fx-text-fill: #3b82f6;"/>
+            <Label text="National Telecommunications Infrastructure Monitoring System" 
+                   style="-fx-font-size: 11px; -fx-text-fill: #cbd5e1; -fx-font-weight: 800;"/>
         </HBox>
         <Region HBox.hgrow="ALWAYS"/>
-        <HBox spacing="10" alignment="CENTER_RIGHT">
-            <Label text="🔐 JWT Auth" style="-fx-font-size: 8px; -fx-text-fill: #2ecc71;"/>
-            <Label text="|" style="-fx-font-size: 8px; -fx-text-fill: #566573;"/>
-            <Label text="📡 localhost:4567" style="-fx-font-size: 8px; -fx-text-fill: #95a5a6; -fx-font-weight: bold;"/>
-            <Label text="|" style="-fx-font-size: 8px; -fx-text-fill: #566573;"/>
-            <Label text="v2.2.0 (API)" style="-fx-font-size: 8px; -fx-text-fill: #95a5a6; -fx-font-weight: bold;"/>
+        <HBox spacing="12" alignment="CENTER_RIGHT">
+            <HBox spacing="6" alignment="CENTER" style="-fx-background-color: rgba(34, 197, 94, 0.1); -fx-background-radius: 4; -fx-padding: 2 8 2 8;">
+                <Label text="🔐" style="-fx-font-size: 10px;"/>
+                <Label text="JWT Secured" style="-fx-font-size: 10px; -fx-text-fill: #22c55e; -fx-font-weight: 700;"/>
+            </HBox>
+            <Label text="|" style="-fx-font-size: 10px; -fx-text-fill: #475569;"/>
+            <HBox spacing="6" alignment="CENTER">
+                <Label text="📡" style="-fx-font-size: 10px;"/>
+                <Label text="localhost:4567" style="-fx-font-size: 10px; -fx-text-fill: #94a3b8; -fx-font-weight: 700;"/>
+            </HBox>
+            <Label text="|" style="-fx-font-size: 10px; -fx-text-fill: #475569;"/>
+            <HBox spacing="6" alignment="CENTER" style="-fx-background-color: rgba(59, 130, 246, 0.1); -fx-background-radius: 4; -fx-padding: 2 8 2 8;">
+                <Label text="API v2.2.0" style="-fx-font-size: 10px; -fx-text-fill: #3b82f6; -fx-font-weight: 700;"/>
+            </HBox>
+            <Label text="|" style="-fx-font-size: 10px; -fx-text-fill: #475569;"/>
+            <Label text="🔄 Live Data" style="-fx-font-size: 10px; -fx-text-fill: #22c55e; -fx-font-weight: 700;"/>
         </HBox>
     </HBox>
 </VBox>
