@@ -1,85 +1,89 @@
-========================================
-NETWORK COVERAGE - WINDOWS INSTALLATION
-========================================
+# 📡 4G/5G Network Mapper
 
-QUICK START:
-1. Double-click 0-quick-start.bat
-2. Choose option 4 (Build + Create EXE)
-3. Wait for the process to complete
-4. Find installer in dist\ folder
+An intelligent network coverage monitoring platform for analyzing
+and visualizing mobile network coverage in Morocco.
 
-DETAILED STEPS:
+## ✨ Overview
 
-STEP 1: BUILD THE APPLICATION
-------------------------------
-Option A: Using batch file
-   - Double-click 1-build.bat
-   - Wait for "BUILD SUCCESSFUL" message
-   - Creates NetworkCoverage.jar
+The application processes heterogeneous telecommunications data
+and provides an interactive geographical interface for monitoring
+network coverage, identifying risk areas, and exploring antenna
+information.
 
-Option B: Using Maven directly
-   - Open Command Prompt in this folder
-   - Run: mvn clean package
-   - Copy: copy target\network-coverage-1.0.0.jar NetworkCoverage.jar
+## 🚀 Features
 
-STEP 2: RUN THE APPLICATION
----------------------------
-Option A: If Java is installed
-   - Double-click 2-run.bat
-   OR
-   - Double-click NetworkCoverage.jar
-   OR
-   - Run: java -jar NetworkCoverage.jar
+- 📍 Interactive network coverage map
+- 📊 Telecom data management
+- 🔥 Coverage heatmaps
+- 🗺️ GeoJSON visualization
+- 🔎 Dynamic filtering
+- 🔐 JWT authentication
+- 👥 Multi-role access control
+- ⚠️ Network risk evaluation
+- 📤 CSV / JSON data export
+- 🗄️ Structured SQLite database
 
-Option B: Create EXE installer (no Java needed)
-   - Double-click 3-create-exe.bat
-   - Installer: dist\Network Coverage-1.0.0.exe
-   - Users install like any Windows software
+## 👥 User Roles
 
-REQUIREMENTS FOR BUILDING:
-1. JDK 17 or later (for jpackage)
-   Download: https://adoptium.net/
-2. Maven 3.6+ 
-   Download: https://maven.apache.org/
-3. Wix Toolset (for EXE creation - optional)
-   Download: https://wixtoolset.org/
+The application supports three roles:
 
-REQUIREMENTS FOR RUNNING (JAR):
-1. Java 17 or later (JRE sufficient)
-   Download: https://www.java.com/
+- **Admin**
+- **Operator**
+- **Viewer**
 
-REQUIREMENTS FOR RUNNING (EXE):
-1. Windows 10 or 11
-2. No Java required!
+Each role has different access permissions.
 
-TROUBLESHOOTING:
+## 🏗️ Architecture
 
-Problem: "Java not found"
-Solution: Install Java 17+ and add to PATH
+```text
+OpenCelliD Data
+      ↓
+Data Processing
+      ↓
+SQLite Database
+      ↓
+REST API
+      ↓
+Authentication / Authorization
+      ↓
+JavaFX Interface
+      ↓
+Interactive Map
+🛠️ Tech Stack
+Java
+JavaFX
+Spark Java
+SQLite
+JWT
+Maven
+Leaflet.js
+OpenStreetMap
+GeoJSON
+📊 Risk Analysis
 
-Problem: "jpackage not found"
-Solution: Install JDK 17+ (not just JRE)
+The platform includes a risk evaluation model combining:
 
-Problem: Wix Toolset error
-Solution: Install Wix Toolset or skip EXE creation
+Weighted analysis
+Technical heuristics
+Haversine distance calculation
 
-Problem: Application won't start
-Solution: 
-  1. Check Java version: java -version
-  2. Rebuild: 1-build.bat
-  3. Run from Command Prompt to see errors
+This allows geographical and technical information to be
+combined when evaluating network coverage risks.
 
-DEFAULT LOGIN CREDENTIALS:
-- Admin:     admin / admin123
-- Operator:  operator / operator123
-- Viewer:    viewer / viewer123
+🗺️ Visualization
 
-API ACCESS:
-- REST API: http://localhost:4567
-- Requires authentication
-- Access API docs from application
+The application provides:
 
-SUPPORT:
-1. Check console for error messages
-2. Ensure port 4567 is not blocked by firewall
-3. Run 0-quick-start.bat for guided setup
+Interactive maps
+Coverage heatmaps
+Antenna locations
+Dynamic filters
+GeoJSON-based geographic data
+🎯 Objective
+
+The goal is to provide a centralized platform for exploring,
+monitoring, and analyzing mobile network coverage data.
+
+👩‍💻 Author
+
+Nabila Boubekr
